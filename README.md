@@ -36,7 +36,13 @@ Each week I will summarize my milestone activity and progress by writing a stand
 
 ### Week 2
 
-My next stand up will go here...
+**Overview:** This week I turned my board into a fully playable Minesweeper game. I filled out my planning worksheet, created 3 new Issues, and added mine placement with a safe first move, nearby mine counts, auto-reveal of empty areas, flags with a mines-remaining counter, and win/loss detection. For usability, I added a How to Play screen, clearer prompts with a symbol legend, a way to cancel a move, and a play-again prompt. I also updated my testing log, changelog, and docs.
+
+**Challenges:** Auto-reveal was the hardest part. One reveal can open dozens of cells, so I used a queue to spread outward from the cell while staying inside the board's edges and never checking the same cell twice. I also had to change `RevealCell` from returning true/false to returning an enum, because the game couldn't tell why a move failed and show the right message.
+
+**Accomplishments:** I leveled up on using a queue for a breadth-first search, and on designing return values so my classes communicate clearly. Planning the week before coding also made each feature easier to build and test one at a time.
+
+**Next Steps:** In Week 3, I'm adding Easy, Medium, and Hard difficulty levels that create the board at runtime, and saving best times to a file.
 
 ### Week 3
 
