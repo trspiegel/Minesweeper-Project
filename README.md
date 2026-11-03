@@ -26,7 +26,7 @@ Each week I will summarize my milestone activity and progress by writing a stand
 
 ### Week 1
 
-*Overview:** This week I chose my project, a console Minesweeper game in C++, and built its foundation. I set up a private GitHub repo with `main` and `dev` branches, organized the course folder structure, and created a Project board with an Issue for each feature. I built four classes (Cell, Board, Game, and Input) with headers in /dev/include and source files in /dev/src. The program has a main menu, prints a 9 x 9 board stored as a 2D vector with row and column labels, lets the player reveal cells, and rejects bad input without crashing. I also added a testing log and changelog to /docs.
+**Overview:** This week I chose my project, a console Minesweeper game in C++, and built its foundation. I set up a private GitHub repo with `main` and `dev` branches, organized the course folder structure, and created a Project board with an Issue for each feature. I built four classes (Cell, Board, Game, and Input) with headers in /dev/include and source files in /dev/src. The program has a main menu, prints a 9 x 9 board stored as a 2D vector with row and column labels, lets the player reveal cells, and rejects bad input without crashing. I also added a testing log and changelog to /docs.
 
 **Challenges:** Git gave me the most trouble. After renaming `master` to `main`, every push recreated `master` because my local branch was still tracking `origin/master`. I fixed it with `git fetch origin --prune` and `git branch -u origin/main main`. Visual Studio also opened my project in Folder View, so my new class files weren't part of the build until I opened the .slnx file and added them to the project.
 
@@ -36,7 +36,13 @@ Each week I will summarize my milestone activity and progress by writing a stand
 
 ### Week 2
 
-My next stand up will go here...
+**Overview:** This week I turned my board into a fully playable Minesweeper game. I filled out my planning worksheet, created 3 new Issues, and added mine placement with a safe first move, nearby mine counts, auto-reveal of empty areas, flags with a mines-remaining counter, and win/loss detection. For usability, I added a How to Play screen, clearer prompts with a symbol legend, a way to cancel a move, and a play-again prompt. I also updated my testing log, changelog, and docs.
+
+**Challenges:** Auto-reveal was the hardest part. One reveal can open dozens of cells, so I used a queue to spread outward from the cell while staying inside the board's edges and never checking the same cell twice. I also had to change `RevealCell` from returning true/false to returning an enum, because the game couldn't tell why a move failed and show the right message.
+
+**Accomplishments:** I leveled up on using a queue for a breadth-first search, and on designing return values so my classes communicate clearly. Planning the week before coding also made each feature easier to build and test one at a time.
+
+**Next Steps:** In Week 3, I'm adding Easy, Medium, and Hard difficulty levels that create the board at runtime, and saving best times to a file.
 
 ### Week 3
 
