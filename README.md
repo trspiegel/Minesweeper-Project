@@ -26,7 +26,7 @@ Each week I will summarize my milestone activity and progress by writing a stand
 
 ### Week 1
 
-*Overview:** This week I chose my project, a console Minesweeper game in C++, and built its foundation. I set up a private GitHub repo with `main` and `dev` branches, organized the course folder structure, and created a Project board with an Issue for each feature. I built four classes (Cell, Board, Game, and Input) with headers in /dev/include and source files in /dev/src. The program has a main menu, prints a 9 x 9 board stored as a 2D vector with row and column labels, lets the player reveal cells, and rejects bad input without crashing. I also added a testing log and changelog to /docs.
+**Overview:** This week I chose my project, a console Minesweeper game in C++, and built its foundation. I set up a private GitHub repo with `main` and `dev` branches, organized the course folder structure, and created a Project board with an Issue for each feature. I built four classes (Cell, Board, Game, and Input) with headers in /dev/include and source files in /dev/src. The program has a main menu, prints a 9 x 9 board stored as a 2D vector with row and column labels, lets the player reveal cells, and rejects bad input without crashing. I also added a testing log and changelog to /docs.
 
 **Challenges:** Git gave me the most trouble. After renaming `master` to `main`, every push recreated `master` because my local branch was still tracking `origin/master`. I fixed it with `git fetch origin --prune` and `git branch -u origin/main main`. Visual Studio also opened my project in Folder View, so my new class files weren't part of the build until I opened the .slnx file and added them to the project.
 
