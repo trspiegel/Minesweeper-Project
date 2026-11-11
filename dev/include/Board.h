@@ -1,6 +1,7 @@
 #pragma once
 
 #include <random>
+#include <utility>
 #include <vector>
 #include "Cell.h"
 
@@ -65,7 +66,12 @@ private:
     // when there is room) free of mines.
     void PlaceMines(int safeRow, int safeCol);
 
-    // Counts the mines in the 8 cells around (row, col).
+    // Returns the positions of the cells touching (row, col), including
+    // diagonals. Positions past the edge of the board are left out, so a
+    // corner cell has 3 neighbors, an edge cell has 5, and others have 8.
+    std::vector<std::pair<int, int>> GetNeighbors(int row, int col) const;
+
+    // Counts the mines in the cells around (row, col).
     int CountAdjacentMines(int row, int col) const;
 
     // Stores the nearby mine count in every cell.
