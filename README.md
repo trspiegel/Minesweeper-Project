@@ -46,7 +46,17 @@ Each week I will summarize my milestone activity and progress by writing a stand
 
 ### Week 3
 
-Stay tuned, this stand up is coming soon...
+**Overview:** This week I refactored my Minesweeper code, then used the cleaner structure to add Easy, Medium, and Hard difficulty levels, a loss screen that shows wrong flags, and saved best times. I also wrote a Milestone 3 doc, added tests 30–48 to my testing log, and merged everything into main with a PR.
+
+**Improvements:** I moved Board's duplicated neighbor loops into one GetNeighbors helper and split Game::PlayRound into smaller functions with one job each. The board is now created at runtime with new, so its size comes from the chosen difficulty. After a loss, correct flags stay F and wrong flags show X. A new ScoreManager class saves the fastest win for each difficulty to a file, shown on a new Best Times menu screen.
+
+**Challenges:** Managing the Board pointer was the hardest part. I delete the old board before making a new one, free it when returning to the menu and in Game's destructor, and turned off copying Game so two objects can't delete the same board. I also made sure a missing or damaged best times file can't crash the game.
+
+**Accomplishments:** I leveled up on dynamic memory with new, delete, and nullptr, and learned why a class that owns a raw pointer needs a destructor and shouldn't be copied. Refactoring first made every new feature easier to add.
+
+**Feedback:** I'd like feedback on whether my timer should start on the first reveal instead of when the board appears, and whether switching to `std::unique_ptr<Board>` is worth it.
+
+**Next Steps:** My main Week 4 goal is to finish and polish the game: test edge cases on all three difficulties, clean up prompts, and finish my final docs and README.
 
 ### Week 4
 

@@ -146,20 +146,6 @@ bool Board::AllSafeCellsRevealed() const
     return true;
 }
 
-void Board::RevealAllMines()
-{
-    for (int row = 0; row < m_rows; ++row)
-    {
-        for (int col = 0; col < m_cols; ++col)
-        {
-            if (m_grid[row][col].HasMine())
-            {
-                m_grid[row][col].Reveal();
-            }
-        }
-    }
-}
-
 void Board::RevealEmptyArea(int startRow, int startCol)
 {
     // Breadth-first search. Each revealed cell with 0 nearby mines adds its
@@ -183,26 +169,16 @@ void Board::RevealEmptyArea(int startRow, int startCol)
             continue;
         }
 
-        for (int rowOffset = -1; rowOffset <= 1; ++rowOffset)
+        for (const std::pair<int, int>& position : GetNeighbors(row, col))
         {
-            for (int colOffset = -1; colOffset <= 1; ++colOffset)
+            Cell& neighbor = m_grid[position.first][position.second];
+            if (neighbor.IsRevealed() || neighbor.IsFlagged() || neighbor.HasMine())
             {
-                int neighborRow = row + rowOffset;
-                int neighborCol = col + colOffset;
-                if ((rowOffset == 0 && colOffset == 0) || !IsInBounds(neighborRow, neighborCol))
-                {
-                    continue;
-                }
-
-                Cell& neighbor = m_grid[neighborRow][neighborCol];
-                if (neighbor.IsRevealed() || neighbor.IsFlagged() || neighbor.HasMine())
-                {
-                    continue;
-                }
-
-                neighbor.Reveal();
-                toCheck.push(std::make_pair(neighborRow, neighborCol));
+                continue;
             }
+
+            neighbor.Reveal();
+            toCheck.push(position);
         }
     }
 }
@@ -245,9 +221,9 @@ void Board::PlaceMines(int safeRow, int safeCol)
     CalculateAdjacentCounts();
 }
 
-int Board::CountAdjacentMines(int row, int col) const
+std::vector<std::pair<int, int>> Board::GetNeighbors(int row, int col) const
 {
-    int count = 0;
+    std::vector<std::pair<int, int>> neighbors;
     for (int rowOffset = -1; rowOffset <= 1; ++rowOffset)
     {
         for (int colOffset = -1; colOffset <= 1; ++colOffset)
@@ -260,10 +236,20 @@ int Board::CountAdjacentMines(int row, int col) const
             {
                 continue;
             }
-            if (m_grid[neighborRow][neighborCol].HasMine())
-            {
-                ++count;
-            }
+            neighbors.push_back(std::make_pair(neighborRow, neighborCol));
+        }
+    }
+    return neighbors;
+}
+
+int Board::CountAdjacentMines(int row, int col) const
+{
+    int count = 0;
+    for (const std::pair<int, int>& neighbor : GetNeighbors(row, col))
+    {
+        if (m_grid[neighbor.first][neighbor.second].HasMine())
+        {
+            ++count;
         }
     }
     return count;
@@ -280,7 +266,7 @@ void Board::CalculateAdjacentCounts()
     }
 }
 
-void Board::Print(bool showMines) const
+void Board::Print(bool showAnswers) const
 {
     // Column numbers across the top. Players see rows and columns starting at 1.
     std::cout << "\n     ";
@@ -298,9 +284,16 @@ void Board::Print(bool showMines) const
         std::cout << std::setw(kCellWidth) << (row + 1) << " |";
         for (int col = 0; col < m_cols; ++col)
         {
-            std::cout << std::setw(kCellWidth) << m_grid[row][col].GetDisplayChar(showMines);
+            std::cout << std::setw(kCellWidth) << m_grid[row][col].GetDisplayChar(showAnswers);
         }
         std::cout << "\n";
     }
-    std::cout << "\nLegend:  # hidden   F flag   . empty   1-8 mines touching   * mine\n\n";
+    if (showAnswers)
+    {
+        std::cout << "\nLegend:  # hidden   F correct flag   X wrong flag   . empty   1-8 mines touching   * mine\n\n";
+    }
+    else
+    {
+        std::cout << "\nLegend:  # hidden   F flag   . empty   1-8 mines touching\n\n";
+    }
 }

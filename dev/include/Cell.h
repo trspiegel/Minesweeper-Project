@@ -19,8 +19,9 @@ public:
     void ToggleFlag();
 
     // Returns the character used to draw this cell in the console.
-    // showMines is a debug option that shows hidden mines as '*'.
-    char GetDisplayChar(bool showMines) const;
+    // showAnswers is used after a loss: hidden mines show as '*', and a flag
+    // on a cell without a mine shows as 'X' so the player can see the mistake.
+    char GetDisplayChar(bool showAnswers) const;
 
 private:
     bool m_hasMine;

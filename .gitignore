@@ -454,3 +454,6 @@ FodyWeavers.xsd
 *.vsidx
 *.vs
 .DS_Store
+
+# Best times saved by the Minesweeper game (created after a win)
+best_times.txt
