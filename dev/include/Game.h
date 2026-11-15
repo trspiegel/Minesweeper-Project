@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ScoreManager.h"
+
 class Board;
 
 // Board size and mine count for one difficulty level.
@@ -62,6 +64,12 @@ private:
     // Plays one game on a fresh board until the player wins, loses, or quits.
     RoundResult PlayRound(const Difficulty& difficulty);
 
+    // Prints the best time for each difficulty, or "--" if it hasn't been won.
+    void ShowBestTimes() const;
+
+    // Tells the player their winning time and whether it's a new best time.
+    void ReportWinTime(const Difficulty& difficulty, int seconds);
+
     // Shows the board, reads one action, and carries it out.
     TurnResult PlayTurn(Board& board);
 
@@ -89,4 +97,7 @@ private:
 
     // The board for the current round. nullptr when no round is being played.
     Board* m_board;
+
+    // Loads and saves the best time for each difficulty.
+    ScoreManager m_scores;
 };

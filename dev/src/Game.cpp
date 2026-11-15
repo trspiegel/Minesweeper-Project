@@ -2,6 +2,8 @@
 #include "../include/Board.h"
 #include "../include/Input.h"
 
+#include <chrono>
+#include <iomanip>
 #include <iostream>
 #include <string>
 
@@ -9,7 +11,11 @@ namespace
 {
     constexpr int kMenuNewGame = 1;
     constexpr int kMenuHowToPlay = 2;
-    constexpr int kMenuQuit = 3;
+    constexpr int kMenuBestTimes = 3;
+    constexpr int kMenuQuit = 4;
+
+    // Best times are saved here, next to the program.
+    const char* const kBestTimesFile = "best_times.txt";
 
     // The difficulty levels, in the order they appear in the menu.
     // Sizes and mine counts match classic Minesweeper.
@@ -23,7 +29,8 @@ namespace
 }
 
 Game::Game()
-    : m_board(nullptr)
+    : m_board(nullptr),
+      m_scores(kBestTimesFile)
 {
 }
 
@@ -48,6 +55,9 @@ void Game::Run()
         case kMenuHowToPlay:
             ShowHowToPlay();
             break;
+        case kMenuBestTimes:
+            ShowBestTimes();
+            break;
         case kMenuQuit:
             running = false;
             break;
@@ -64,6 +74,7 @@ void Game::ShowMainMenu() const
     std::cout << "=============================\n";
     std::cout << kMenuNewGame << ". New Game\n";
     std::cout << kMenuHowToPlay << ". How to Play\n";
+    std::cout << kMenuBestTimes << ". Best Times\n";
     std::cout << kMenuQuit << ". Quit\n";
 }
 
@@ -98,6 +109,7 @@ void Game::ShowHowToPlay() const
     std::cout << "  - Revealing an empty cell opens the empty area around it.\n";
     std::cout << "  - Flagged cells can't be revealed until you unflag them.\n";
     std::cout << "  - After a game ends, you can play again or return to the menu.\n";
+    std::cout << "  - Win fast to set a best time for each difficulty (see Best Times).\n";
     std::cout << "=================================\n";
 }
 
@@ -178,6 +190,52 @@ void Game::PlayGames()
     DeleteBoard();
 }
 
+void Game::ShowBestTimes() const
+{
+    std::cout << "\n========== BEST TIMES ==========\n";
+    for (int i = 0; i < kDifficultyCount; ++i)
+    {
+        const Difficulty& level = kDifficulties[i];
+        int seconds = 0;
+        std::cout << "  " << std::left << std::setw(8) << level.name << std::right;
+        if (m_scores.GetBestTime(level.name, seconds))
+        {
+            std::cout << ScoreManager::FormatTime(seconds) << "\n";
+        }
+        else
+        {
+            std::cout << "--  (not won yet)\n";
+        }
+    }
+    std::cout << "================================\n";
+}
+
+void Game::ReportWinTime(const Difficulty& difficulty, int seconds)
+{
+    std::cout << "Your time: " << ScoreManager::FormatTime(seconds) << "\n";
+
+    int oldBest = 0;
+    bool hadBest = m_scores.GetBestTime(difficulty.name, oldBest);
+
+    switch (m_scores.RecordWin(difficulty.name, seconds))
+    {
+    case ScoreManager::RecordResult::NewBestTime:
+        std::cout << "New best time for " << difficulty.name << "!\n";
+        break;
+    case ScoreManager::RecordResult::NewBestTimeNotSaved:
+        std::cout << "New best time for " << difficulty.name
+                  << "! (It couldn't be saved to " << kBestTimesFile << ".)\n";
+        break;
+    case ScoreManager::RecordResult::NotABestTime:
+        if (hadBest)
+        {
+            std::cout << "Best time for " << difficulty.name << ": "
+                      << ScoreManager::FormatTime(oldBest) << "\n";
+        }
+        break;
+    }
+}
+
 Game::RoundResult Game::PlayRound(const Difficulty& difficulty)
 {
     CreateBoard(difficulty);
@@ -185,12 +243,20 @@ Game::RoundResult Game::PlayRound(const Difficulty& difficulty)
               << m_board->GetCols() << " board with " << m_board->GetMineCount()
               << " mines. Good luck!\n";
 
+    // The timer starts when the board is shown and stops on a win.
+    std::chrono::steady_clock::time_point startTime = std::chrono::steady_clock::now();
+
     while (true)
     {
         switch (PlayTurn(*m_board))
         {
         case TurnResult::Won:
+        {
+            std::chrono::steady_clock::duration elapsed = std::chrono::steady_clock::now() - startTime;
+            int seconds = static_cast<int>(std::chrono::duration_cast<std::chrono::seconds>(elapsed).count());
+            ReportWinTime(difficulty, seconds);
             return RoundResult::Won;
+        }
         case TurnResult::Lost:
             return RoundResult::Lost;
         case TurnResult::QuitToMenu:
