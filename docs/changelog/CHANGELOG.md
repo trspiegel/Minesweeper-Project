@@ -2,6 +2,36 @@
 
 Progress notes for each milestone. Newest entries are at the top.
 
+## Week 3 / Milestone 3: Refactoring, Difficulty, and Best Times
+
+### Added
+- **Difficulty levels (#11):** New Game asks for Easy (9 x 9, 10 mines), Medium (16 x 16, 40 mines), or Hard (16 x 30, 99 mines), or 0 to go back. Play again keeps the same difficulty.
+- **Best times (#12):** each round is timed with `std::chrono`. The fastest win for each difficulty is saved to `best_times.txt` and shown on a new **Best Times** menu option.
+- **`ScoreManager` class** (`ScoreManager.h` / `ScoreManager.cpp`): loads, compares, and saves best times using a `std::map`.
+- **Wrong flags after a loss:** the loss screen shows every mine as `*`, keeps correct flags as `F`, and marks flags on safe cells with `X`.
+- How to Play now lists the difficulty levels, the loss-screen symbols, and Best Times.
+
+### Changed
+- **Refactor:** `CountAdjacentMines` and `RevealEmptyArea` now share one `Board::GetNeighbors` helper instead of each having its own 8-neighbor loop.
+- **Refactor:** `Game::PlayRound` was split into `PlayGames`, `PlayRound`, `PlayTurn`, `ReadMove`, `HandleReveal`, and `HandleFlag`, with a new `TurnResult` enum.
+- `Game` now creates the `Board` at runtime with `new` and frees it with `delete` (`CreateBoard` / `DeleteBoard`), with a destructor and copying turned off.
+- `Board::Print` and `Cell::GetDisplayChar` take a `showAnswers` flag for the loss screen, and the legend changes to match.
+- The main menu now has four options: New Game, How to Play, Best Times, Quit.
+- `best_times.txt` added to `.gitignore`.
+
+### Removed
+- `Board::RevealAllMines`. `Print(true)` now shows the mines without changing any cell's state.
+
+### Why
+- Refactoring first removed duplicate code and made `PlayRound` short enough to extend safely.
+- Difficulty levels and best times give players a reason to keep playing, and the `X` flags help players learn from a loss.
+
+### Testing
+- Ran tests 30–48 in `docs/testing/testing-log.md`, plus the Milestone 2 tests again after refactoring. Screenshots are in `images/milestone3-run.png` and `images/milestone3-features.png`.
+
+### Next
+- Final testing on all three difficulties, polish, and final documentation for Milestone 4
+
 ## Week 2 / Milestone 2: Playable Game
 
 ### Added

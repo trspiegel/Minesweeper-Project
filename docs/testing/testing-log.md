@@ -3,6 +3,36 @@
 Evidence that the program compiles, runs, and behaves as expected.
 Screenshots are saved in the `/images` folder.
 
+## Milestone 3 (Week 3)
+
+| # | Test | Steps | Expected Result | Actual Result | Pass/Fail |
+|---|---|---|---|---|---|
+| 30 | Build | Rebuild the solution in Visual Studio | Rebuild succeeds with 0 errors | Rebuild succeeded with 0 errors | Pass |
+| 31 | Main menu | Run the program (Ctrl+F5) | Menu shows 1. New Game, 2. How to Play, 3. Best Times, 4. Quit | Menu showed all four options | Pass |
+| 32 | How to Play | Choose 2 | Lists Easy, Medium, and Hard with their sizes and mines, and explains `*`, `F`, and `X` on the loss screen | Showed all three difficulty levels and the loss-screen symbols | Pass |
+| 33 | Difficulty menu | Choose 1 (New Game) | Shows 1. Easy, 2. Medium, 3. Hard, and 0. Back to the main menu | Showed all three levels and the back option | Pass |
+| 34 | Invalid difficulty | Type `5` | "Please enter a whole number from 0 to 3." and it asks again | "Please enter a whole number from 0 to 3." and it asked again | Pass |
+| 35 | Back to menu | Type `0` at the difficulty prompt | Returns to the main menu | Returned to the main menu | Pass |
+| 36 | Easy board | Choose Easy | "New Easy game: 9 x 9 board with 10 mines." and a 9 x 9 board | 9 x 9 board with Mines: 10 | Pass |
+| 37 | Medium board | Choose Medium | 16 x 16 board, Mines: 40 | 16 x 16 board with Mines: 40 | Pass |
+| 38 | Hard board | Choose Hard, then reveal row `8`, column `30` | 16 x 30 board, Mines: 99, columns labeled 1–30, and column 30 is accepted | 16 x 30 board printed with columns 1–30, and column 30 was accepted | Pass |
+| 39 | Play again keeps difficulty | Finish a Medium game, then type `y` | A new Medium board starts without asking for the difficulty again | A new 16 x 16 board with 40 mines started | Pass |
+| 40 | Wrong flag after a loss | Flag a few hidden cells, then reveal cells until you hit a mine | Flags on safe cells show `X`, flags on mines stay `F`, and every other mine shows `*` | Wrong flags showed `X`, correct flags stayed `F`, and the other mines showed `*` | Pass |
+| 41 | Loss legend | Look at the legend under the board from test 40 | Legend includes "F correct flag" and "X wrong flag" | Legend showed "F correct flag" and "X wrong flag" | Pass |
+| 42 | No best times yet | With no `best_times.txt`, choose 3 (Best Times) | Easy, Medium, and Hard each show "-- (not won yet)" | All three showed "-- (not won yet)" | Pass |
+| 43 | First win | Win an Easy game (see note) | "Your time: m:ss" and "New best time for Easy!" | Showed my time and "New best time for Easy!" | Pass |
+| 44 | Best time saved | Quit, run the program again, choose Best Times | Easy shows the time from test 43 | Easy showed the same time after restarting | Pass |
+| 45 | Slower win | Win Easy again, taking longer than before | Shows your time and "Best time for Easy:" with the old time, and the saved time doesn't change | Showed "Best time for Easy:" with the old time, and the saved time didn't change | Pass |
+| 46 | Damaged best times file | Add a line like `garbage` to `dev/best_times.txt`, then run and open Best Times | The game starts normally, skips the bad line, and still shows the saved times | The game started normally and Easy still showed the saved time | Pass |
+| 47 | Week 2 features still work | Repeat tests 16–21 and 26 on Easy | Same results as Milestone 2 | Invalid action, cancel, flag, unflag, and quit mid-game all worked the same as Milestone 2 | Pass |
+| 48 | Quit | Choose 4 | "Thanks for playing!" and the program exits with code 0 | "Thanks for playing!" and the program exited with code 0 | Pass |
+
+**Note for tests 43–45:** Winning a full game takes a while, so for these tests I temporarily changed Easy's mine count in `kDifficulties` (in `Game.cpp`) from 10 to 0 and rebuilt. With no mines, the first reveal clears the board. I waited about 10 seconds before the first reveal for test 43 and longer for test 45. After testing, I changed it back to 10, rebuilt, and deleted `dev/best_times.txt` so real best times start fresh.
+
+Screenshots:
+- `images/milestone3-run.png` (a Hard game in progress)
+- `images/milestone3-features.png` (the Best Times screen or a loss screen with wrong flags)
+
 ## Milestone 2 (Week 2)
 
 | # | Test | Steps | Expected Result | Actual Result | Pass/Fail |
