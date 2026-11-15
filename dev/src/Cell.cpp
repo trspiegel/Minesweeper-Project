@@ -56,7 +56,7 @@ void Cell::ToggleFlag()
     }
 }
 
-char Cell::GetDisplayChar(bool showMines) const
+char Cell::GetDisplayChar(bool showAnswers) const
 {
     if (m_isRevealed)
     {
@@ -73,9 +73,14 @@ char Cell::GetDisplayChar(bool showMines) const
 
     if (m_isFlagged)
     {
+        // After a loss, a flag on a safe cell was a wrong guess.
+        if (showAnswers && !m_hasMine)
+        {
+            return 'X';
+        }
         return 'F';
     }
-    if (showMines && m_hasMine)
+    if (showAnswers && m_hasMine)
     {
         return '*';
     }

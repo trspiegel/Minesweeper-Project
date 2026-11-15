@@ -55,11 +55,10 @@ public:
     // True when every cell without a mine has been revealed (a win).
     bool AllSafeCellsRevealed() const;
 
-    // Reveals every mine. Used to show the player the board after a loss.
-    void RevealAllMines();
-
     // Prints the board with row and column labels and a symbol legend.
-    void Print(bool showMines = false) const;
+    // Pass true after a loss to show every mine and mark wrong flags with X.
+    // This only changes what is printed, not the state of any cell.
+    void Print(bool showAnswers = false) const;
 
 private:
     // Randomly places mines, keeping the first cell picked (and its neighbors,

@@ -146,20 +146,6 @@ bool Board::AllSafeCellsRevealed() const
     return true;
 }
 
-void Board::RevealAllMines()
-{
-    for (int row = 0; row < m_rows; ++row)
-    {
-        for (int col = 0; col < m_cols; ++col)
-        {
-            if (m_grid[row][col].HasMine())
-            {
-                m_grid[row][col].Reveal();
-            }
-        }
-    }
-}
-
 void Board::RevealEmptyArea(int startRow, int startCol)
 {
     // Breadth-first search. Each revealed cell with 0 nearby mines adds its
@@ -280,7 +266,7 @@ void Board::CalculateAdjacentCounts()
     }
 }
 
-void Board::Print(bool showMines) const
+void Board::Print(bool showAnswers) const
 {
     // Column numbers across the top. Players see rows and columns starting at 1.
     std::cout << "\n     ";
@@ -298,9 +284,16 @@ void Board::Print(bool showMines) const
         std::cout << std::setw(kCellWidth) << (row + 1) << " |";
         for (int col = 0; col < m_cols; ++col)
         {
-            std::cout << std::setw(kCellWidth) << m_grid[row][col].GetDisplayChar(showMines);
+            std::cout << std::setw(kCellWidth) << m_grid[row][col].GetDisplayChar(showAnswers);
         }
         std::cout << "\n";
     }
-    std::cout << "\nLegend:  # hidden   F flag   . empty   1-8 mines touching   * mine\n\n";
+    if (showAnswers)
+    {
+        std::cout << "\nLegend:  # hidden   F correct flag   X wrong flag   . empty   1-8 mines touching   * mine\n\n";
+    }
+    else
+    {
+        std::cout << "\nLegend:  # hidden   F flag   . empty   1-8 mines touching\n\n";
+    }
 }

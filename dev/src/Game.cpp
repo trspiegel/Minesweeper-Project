@@ -88,7 +88,11 @@ void Game::ShowHowToPlay() const
     std::cout << "  #    hidden cell\n";
     std::cout << "  F    flag (a cell you think is a mine)\n";
     std::cout << "  .    no mines touch this cell\n";
-    std::cout << "  1-8  how many mines touch this cell, including diagonals\n\n";
+    std::cout << "  1-8  how many mines touch this cell, including diagonals\n";
+    std::cout << "After a loss, the board shows the answers:\n";
+    std::cout << "  *    a mine\n";
+    std::cout << "  F    a correct flag (it was on a mine)\n";
+    std::cout << "  X    a wrong flag (it was on a safe cell)\n\n";
     std::cout << "Tips:\n";
     std::cout << "  - Your first reveal is always safe.\n";
     std::cout << "  - Revealing an empty cell opens the empty area around it.\n";
@@ -258,8 +262,8 @@ Game::TurnResult Game::HandleReveal(Board& board, int row, int col) const
         std::cout << "That cell is flagged. Unflag it first if you want to reveal it.\n";
         break;
     case Board::RevealResult::HitMine:
-        board.RevealAllMines();
-        board.Print();
+        // Show where every mine was and which flags were wrong (X).
+        board.Print(true);
         std::cout << "BOOM! You hit a mine. Game over.\n";
         return TurnResult::Lost;
     case Board::RevealResult::Invalid:
