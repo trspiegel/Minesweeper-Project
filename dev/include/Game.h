@@ -2,19 +2,35 @@
 
 class Board;
 
+// Board size and mine count for one difficulty level.
+struct Difficulty
+{
+    const char* name;
+    int rows;
+    int cols;
+    int mineCount;
+};
+
 // Controls the flow of the program: the main menu and each round of play.
+// Game creates the Board on the heap at runtime, because its size depends on
+// the difficulty the player picks.
 class Game
 {
 public:
+    Game();
+
+    // Frees the board if one is still in memory.
+    ~Game();
+
+    // Game owns a raw Board pointer, so copying a Game would make two Games
+    // delete the same Board. Copying is turned off to prevent that.
+    Game(const Game&) = delete;
+    Game& operator=(const Game&) = delete;
+
     // Runs the main menu loop until the player chooses Quit.
     void Run();
 
 private:
-    // Board settings for now. Difficulty levels will replace these.
-    static constexpr int kRows = 9;
-    static constexpr int kCols = 9;
-    static constexpr int kMineCount = 10;
-
     // How a round ended.
     enum class RoundResult
     {
@@ -35,11 +51,16 @@ private:
     void ShowMainMenu() const;
     void ShowHowToPlay() const;
 
-    // Starts new rounds until the player says no to playing again.
+    // Asks the player to pick Easy, Medium, or Hard.
+    // Returns false if the player enters 0 to go back to the menu.
+    bool ChooseDifficulty(Difficulty& chosen) const;
+
+    // Asks for a difficulty, then starts new rounds at that difficulty until
+    // the player says no to playing again.
     void PlayGames();
 
-    // Plays one game from a fresh board until the player wins, loses, or quits.
-    RoundResult PlayRound();
+    // Plays one game on a fresh board until the player wins, loses, or quits.
+    RoundResult PlayRound(const Difficulty& difficulty);
 
     // Shows the board, reads one action, and carries it out.
     TurnResult PlayTurn(Board& board);
@@ -59,4 +80,13 @@ private:
 
     // Asks "Play again? (Y/N)" after a win or loss.
     bool AskPlayAgain() const;
+
+    // Deletes the old board (if any) and creates a new one with new.
+    void CreateBoard(const Difficulty& difficulty);
+
+    // Deletes the current board and sets the pointer back to nullptr.
+    void DeleteBoard();
+
+    // The board for the current round. nullptr when no round is being played.
+    Board* m_board;
 };

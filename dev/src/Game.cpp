@@ -10,6 +10,26 @@ namespace
     constexpr int kMenuNewGame = 1;
     constexpr int kMenuHowToPlay = 2;
     constexpr int kMenuQuit = 3;
+
+    // The difficulty levels, in the order they appear in the menu.
+    // Sizes and mine counts match classic Minesweeper.
+    const Difficulty kDifficulties[] =
+    {
+        { "Easy",    9,  9, 10 },
+        { "Medium", 16, 16, 40 },
+        { "Hard",   16, 30, 99 }
+    };
+    constexpr int kDifficultyCount = sizeof(kDifficulties) / sizeof(kDifficulties[0]);
+}
+
+Game::Game()
+    : m_board(nullptr)
+{
+}
+
+Game::~Game()
+{
+    DeleteBoard();
 }
 
 void Game::Run()
@@ -52,6 +72,14 @@ void Game::ShowHowToPlay() const
     std::cout << "\n========== HOW TO PLAY ==========\n";
     std::cout << "Goal: reveal every cell that does not hide a mine.\n";
     std::cout << "Reveal a mine and the game is over.\n\n";
+    std::cout << "Difficulty levels:\n";
+    for (int i = 0; i < kDifficultyCount; ++i)
+    {
+        const Difficulty& level = kDifficulties[i];
+        std::cout << "  " << level.name << ": " << level.rows << " x " << level.cols
+                  << " board, " << level.mineCount << " mines\n";
+    }
+    std::cout << "\n";
     std::cout << "Each turn:\n";
     std::cout << "  1. Choose an action: R to reveal, F to flag or unflag,\n";
     std::cout << "     or Q to quit to the menu.\n";
@@ -105,27 +133,57 @@ bool Game::AskPlayAgain() const
     return answer == 'Y';
 }
 
+bool Game::ChooseDifficulty(Difficulty& chosen) const
+{
+    std::cout << "\nDifficulty levels:\n";
+    for (int i = 0; i < kDifficultyCount; ++i)
+    {
+        const Difficulty& level = kDifficulties[i];
+        std::cout << (i + 1) << ". " << level.name << " (" << level.rows << " x " << level.cols
+                  << ", " << level.mineCount << " mines)\n";
+    }
+    std::cout << "0. Back to the main menu\n";
+
+    int choice = Input::ReadInt("Choose a difficulty: ", 0, kDifficultyCount);
+    if (choice == 0)
+    {
+        return false;
+    }
+    chosen = kDifficulties[choice - 1];
+    return true;
+}
+
 void Game::PlayGames()
 {
+    Difficulty difficulty = kDifficulties[0];
+    if (!ChooseDifficulty(difficulty))
+    {
+        return;
+    }
+
     // Keep starting new boards until the player says no to playing again.
     // Quitting to the menu mid-game skips the question.
     bool playAgain = true;
     while (playAgain)
     {
-        RoundResult result = PlayRound();
+        RoundResult result = PlayRound(difficulty);
         playAgain = (result != RoundResult::QuitToMenu) && AskPlayAgain();
     }
+
+    // Back at the menu, so the board isn't needed anymore.
+    DeleteBoard();
 }
 
-Game::RoundResult Game::PlayRound()
+Game::RoundResult Game::PlayRound(const Difficulty& difficulty)
 {
-    Board board(kRows, kCols, kMineCount);
-    std::cout << "\nNew game: " << kRows << " x " << kCols << " board with "
-              << kMineCount << " mines. Good luck!\n";
+    CreateBoard(difficulty);
+    std::cout << "\nNew " << difficulty.name << " game: " << m_board->GetRows() << " x "
+              << m_board->GetCols() << " board with " << m_board->GetMineCount()
+              << " mines. Good luck!\n";
 
     while (true)
     {
-        switch (PlayTurn(board))
+        switch (PlayTurn(*m_board))
         {
         case TurnResult::Won:
             return RoundResult::Won;
@@ -217,4 +275,18 @@ Game::TurnResult Game::HandleReveal(Board& board, int row, int col) const
         break;
     }
     return TurnResult::Continue;
+}
+
+void Game::CreateBoard(const Difficulty& difficulty)
+{
+    // Free the last round's board first so its memory isn't leaked.
+    DeleteBoard();
+    m_board = new Board(difficulty.rows, difficulty.cols, difficulty.mineCount);
+}
+
+void Game::DeleteBoard()
+{
+    // Deleting nullptr does nothing, so this is safe to call at any time.
+    delete m_board;
+    m_board = nullptr;
 }
