@@ -23,17 +23,8 @@ void Game::Run()
         switch (choice)
         {
         case kMenuNewGame:
-        {
-            // Keep starting new boards until the player says no to playing
-            // again. Quitting to the menu mid-game skips the question.
-            bool playAgain = true;
-            while (playAgain)
-            {
-                RoundResult result = PlayRound();
-                playAgain = (result != RoundResult::QuitToMenu) && AskPlayAgain();
-            }
+            PlayGames();
             break;
-        }
         case kMenuHowToPlay:
             ShowHowToPlay();
             break;
@@ -114,6 +105,18 @@ bool Game::AskPlayAgain() const
     return answer == 'Y';
 }
 
+void Game::PlayGames()
+{
+    // Keep starting new boards until the player says no to playing again.
+    // Quitting to the menu mid-game skips the question.
+    bool playAgain = true;
+    while (playAgain)
+    {
+        RoundResult result = PlayRound();
+        playAgain = (result != RoundResult::QuitToMenu) && AskPlayAgain();
+    }
+}
+
 Game::RoundResult Game::PlayRound()
 {
     Board board(kRows, kCols, kMineCount);
@@ -122,59 +125,96 @@ Game::RoundResult Game::PlayRound()
 
     while (true)
     {
-        PrintStatus(board);
-        board.Print();
-
-        char action = Input::ReadChoice(
-            "Choose an action - (R)eveal, (F)lag/unflag, or (Q)uit to menu: ", "RFQ");
-        if (action == 'Q')
+        switch (PlayTurn(board))
         {
-            std::cout << "Returning to the main menu.\n";
-            return RoundResult::QuitToMenu;
-        }
-
-        int row = Input::ReadInt("Row (1-" + std::to_string(kRows) + "), or 0 to cancel: ", 0, kRows);
-        if (row == 0)
-        {
-            continue;
-        }
-        int col = Input::ReadInt("Column (1-" + std::to_string(kCols) + "), or 0 to cancel: ", 0, kCols);
-        if (col == 0)
-        {
-            continue;
-        }
-
-        // Players use numbers starting at 1, the board uses indexes starting at 0.
-        if (action == 'F')
-        {
-            HandleFlag(board, row - 1, col - 1);
-            continue;
-        }
-
-        switch (board.RevealCell(row - 1, col - 1))
-        {
-        case Board::RevealResult::AlreadyRevealed:
-            std::cout << "That cell is already revealed. Try another one.\n";
-            break;
-        case Board::RevealResult::Flagged:
-            std::cout << "That cell is flagged. Unflag it first if you want to reveal it.\n";
-            break;
-        case Board::RevealResult::HitMine:
-            board.RevealAllMines();
-            board.Print();
-            std::cout << "BOOM! You hit a mine. Game over.\n";
+        case TurnResult::Won:
+            return RoundResult::Won;
+        case TurnResult::Lost:
             return RoundResult::Lost;
-        case Board::RevealResult::Invalid:
-            std::cout << "That position is off the board.\n";
-            break;
-        case Board::RevealResult::Safe:
-            if (board.AllSafeCellsRevealed())
-            {
-                board.Print();
-                std::cout << "You cleared every safe cell. You win!\n";
-                return RoundResult::Won;
-            }
+        case TurnResult::QuitToMenu:
+            return RoundResult::QuitToMenu;
+        case TurnResult::Continue:
             break;
         }
     }
+}
+
+Game::TurnResult Game::PlayTurn(Board& board)
+{
+    PrintStatus(board);
+    board.Print();
+
+    char action = Input::ReadChoice(
+        "Choose an action - (R)eveal, (F)lag/unflag, or (Q)uit to menu: ", "RFQ");
+    if (action == 'Q')
+    {
+        std::cout << "Returning to the main menu.\n";
+        return TurnResult::QuitToMenu;
+    }
+
+    int row = 0;
+    int col = 0;
+    if (!ReadMove(board, row, col))
+    {
+        return TurnResult::Continue;
+    }
+
+    if (action == 'F')
+    {
+        HandleFlag(board, row, col);
+        return TurnResult::Continue;
+    }
+    return HandleReveal(board, row, col);
+}
+
+bool Game::ReadMove(const Board& board, int& row, int& col) const
+{
+    int rows = board.GetRows();
+    int cols = board.GetCols();
+
+    int rowNumber = Input::ReadInt("Row (1-" + std::to_string(rows) + "), or 0 to cancel: ", 0, rows);
+    if (rowNumber == 0)
+    {
+        return false;
+    }
+    int colNumber = Input::ReadInt("Column (1-" + std::to_string(cols) + "), or 0 to cancel: ", 0, cols);
+    if (colNumber == 0)
+    {
+        return false;
+    }
+
+    // Players use numbers starting at 1, the board uses indexes starting at 0.
+    row = rowNumber - 1;
+    col = colNumber - 1;
+    return true;
+}
+
+Game::TurnResult Game::HandleReveal(Board& board, int row, int col) const
+{
+    switch (board.RevealCell(row, col))
+    {
+    case Board::RevealResult::AlreadyRevealed:
+        std::cout << "That cell is already revealed. Try another one.\n";
+        break;
+    case Board::RevealResult::Flagged:
+        std::cout << "That cell is flagged. Unflag it first if you want to reveal it.\n";
+        break;
+    case Board::RevealResult::HitMine:
+        board.RevealAllMines();
+        board.Print();
+        std::cout << "BOOM! You hit a mine. Game over.\n";
+        return TurnResult::Lost;
+    case Board::RevealResult::Invalid:
+        std::cout << "That position is off the board.\n";
+        break;
+    case Board::RevealResult::Safe:
+        if (board.AllSafeCellsRevealed())
+        {
+            board.Print();
+            std::cout << "You cleared every safe cell. You win!\n";
+            return TurnResult::Won;
+        }
+        break;
+    }
+    return TurnResult::Continue;
 }
