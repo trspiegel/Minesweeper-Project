@@ -1,6 +1,9 @@
 #pragma once
 
 #include "ScoreManager.h"
+#include "Stopwatch.h"
+
+#include <memory>
 
 class Board;
 
@@ -15,17 +18,18 @@ struct Difficulty
 
 // Controls the flow of the program: the main menu and each round of play.
 // Game creates the Board on the heap at runtime, because its size depends on
-// the difficulty the player picks.
+// the difficulty the player picks. A std::unique_ptr owns the Board, so it is
+// deleted automatically and can never be leaked or deleted twice.
 class Game
 {
 public:
     Game();
 
-    // Frees the board if one is still in memory.
+    // Defined in Game.cpp, where Board is a complete type, so the unique_ptr
+    // knows how to delete the Board.
     ~Game();
 
-    // Game owns a raw Board pointer, so copying a Game would make two Games
-    // delete the same Board. Copying is turned off to prevent that.
+    // A unique_ptr can only have one owner, so a Game can't be copied.
     Game(const Game&) = delete;
     Game& operator=(const Game&) = delete;
 
@@ -64,8 +68,12 @@ private:
     // Plays one game on a fresh board until the player wins, loses, or quits.
     RoundResult PlayRound(const Difficulty& difficulty);
 
-    // Prints the best time for each difficulty, or "--" if it hasn't been won.
-    void ShowBestTimes() const;
+    // Prints the best time for each difficulty, or "--" if it hasn't been won,
+    // then offers to reset the times if any are saved.
+    void ShowBestTimes();
+
+    // Asks the player to confirm, then deletes every saved best time.
+    void ResetBestTimes();
 
     // Tells the player their winning time and whether it's a new best time.
     void ReportWinTime(const Difficulty& difficulty, int seconds);
@@ -78,26 +86,28 @@ private:
     bool ReadMove(const Board& board, int& row, int& col) const;
 
     // Reveals a cell and reports whether the game was won, lost, or continues.
-    TurnResult HandleReveal(Board& board, int row, int col) const;
+    // The first safe reveal of a round starts the stopwatch.
+    TurnResult HandleReveal(Board& board, int row, int col);
 
     // Places or removes a flag and tells the player what happened.
     void HandleFlag(Board& board, int row, int col) const;
 
-    // Prints the mine, flag, and mines-remaining counts above the board.
+    // Prints the mine, flag, mines-remaining, and time counts above the board.
     void PrintStatus(const Board& board) const;
 
     // Asks "Play again? (Y/N)" after a win or loss.
     bool AskPlayAgain() const;
 
-    // Deletes the old board (if any) and creates a new one with new.
+    // Creates a new board for the chosen difficulty. The old board (if any)
+    // is deleted automatically when m_board takes ownership of the new one.
     void CreateBoard(const Difficulty& difficulty);
 
-    // Deletes the current board and sets the pointer back to nullptr.
-    void DeleteBoard();
-
-    // The board for the current round. nullptr when no round is being played.
-    Board* m_board;
+    // The board for the current round. Empty when no round is being played.
+    std::unique_ptr<Board> m_board;
 
     // Loads and saves the best time for each difficulty.
     ScoreManager m_scores;
+
+    // Times the current round, starting on the first reveal.
+    Stopwatch m_stopwatch;
 };

@@ -26,7 +26,7 @@ Each week I will summarize my milestone activity and progress by writing a stand
 
 ### Week 1
 
-**Overview:** This week I chose my project, a console Minesweeper game in C++, and built its foundation. I set up a private GitHub repo with `main` and `dev` branches, organized the course folder structure, and created a Project board with an Issue for each feature. I built four classes (Cell, Board, Game, and Input) with headers in /dev/include and source files in /dev/src. The program has a main menu, prints a 9 x 9 board stored as a 2D vector with row and column labels, lets the player reveal cells, and rejects bad input without crashing. I also added a testing log and changelog to /docs.
+**Overview:** This week I chose my project, a console Minesweeper game in C++, and built its foundation. I set up a GitHub repo with `main` and `dev` branches, organized the course folder structure, and created a Project board with an Issue for each feature. I built four classes (Cell, Board, Game, and Input) with headers in /dev/include and source files in /dev/src. The program has a main menu, prints a 9 x 9 board stored as a 2D vector with row and column labels, lets the player reveal cells, and rejects bad input without crashing. I also added a testing log and changelog to /docs.
 
 **Challenges:** Git gave me the most trouble. After renaming `master` to `main`, every push recreated `master` because my local branch was still tracking `origin/master`. I fixed it with `git fetch origin --prune` and `git branch -u origin/main main`. Visual Studio also opened my project in Folder View, so my new class files weren't part of the build until I opened the .slnx file and added them to the project.
 
@@ -60,4 +60,14 @@ Each week I will summarize my milestone activity and progress by writing a stand
 
 ### Week 4
 
-My final stand up...
+**Overview:** This week I finished and polished my console Minesweeper game. I created four final Issues, switched the board to a `std::unique_ptr`, added a Stopwatch class so the timer starts on the first reveal, added a Reset Best Times option, ran a full final test pass, and merged the final version into main.
+
+**Project Wrap-Up:** Before submitting, I tested every menu, prompt, and difficulty, made sure invalid input never crashes the game, and updated my docs, testing log, changelog, and screenshots. The final game has three difficulty levels, a safe first move, auto-reveal, flags, a loss screen that shows wrong flags, a live timer, and saved best times that can be reset.
+
+**Challenges:** Switching from a raw pointer to `std::unique_ptr` taught me that Game's destructor still had to be defined in Game.cpp, where Board is a complete type. Testing best times was slow until I temporarily set Easy to 0 mines so the first reveal won right away.
+
+**Accomplishments:** I leveled up on smart pointers and letting objects clean up after themselves, and on testing the whole program end to end instead of one feature at a time.
+
+**Biggest Takeaway:** Breaking the project into small Issues and committing each piece separately made a month-long project manageable, and refactoring before adding features saved me time every week.
+
+**Future Development:** If I kept going, I would add chording (revealing around a number once its flags are placed), custom board sizes, colored numbers, and a mobile version using what I learn in my app development classes.

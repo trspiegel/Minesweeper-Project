@@ -27,6 +27,13 @@ public:
     // Returns true and sets seconds if the difficulty has a saved best time.
     bool GetBestTime(const std::string& difficulty, int& seconds) const;
 
+    // True if at least one difficulty has a saved best time.
+    bool HasAnyTimes() const;
+
+    // Deletes every best time and saves the empty list to the file.
+    // Returns false if the file couldn't be written.
+    bool ClearAll();
+
     // Formats a number of seconds as minutes:seconds, for example 75 -> "1:15".
     static std::string FormatTime(int seconds);
 

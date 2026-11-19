@@ -2,6 +2,31 @@
 
 Progress notes for each milestone. Newest entries are at the top.
 
+## Week 4 / Milestone 4: Final Version
+
+### Added
+- **`Stopwatch` class** (`Stopwatch.h` / `Stopwatch.cpp`): times a round in whole seconds using `std::chrono::steady_clock`.
+- **Live timer:** the status line above the board now shows `Time: m:ss`.
+- **Reset Best Times:** the Best Times screen offers (B)ack or (R)eset, and resetting asks for a Y/N confirmation first.
+- `ScoreManager::HasAnyTimes()` and `ScoreManager::ClearAll()`.
+- How to Play explains when the timer starts and how to reset best times.
+
+### Changed
+- **Refactor:** `Game` now owns the board with `std::unique_ptr<Board>` and `std::make_unique` instead of a raw pointer with `new` and `delete`. `DeleteBoard()` was removed and the destructor is now `= default`.
+- `HandleReveal` starts the stopwatch on the first safe reveal, so it is no longer `const`.
+- `ShowBestTimes` is no longer `const`, because it can now reset the times.
+
+### Fixed
+- **Timer started too early:** in Milestone 3, the timer started as soon as the board appeared, so time spent reading the empty board counted against the player. It now starts on the first reveal, like classic Minesweeper.
+
+### Why
+- `unique_ptr` deletes the board automatically, so the game can't leak it or delete it twice.
+- Starting the timer on the first reveal makes best times fair, and the reset option means players don't have to delete a file by hand to start over.
+
+### Testing
+- Ran the final test pass (tests 49–67 in `docs/testing/testing-log.md`), including invalid input, every difficulty, and the Milestone 2 and 3 tests again.
+- Screenshots: `images/final-build.png`, `images/final-run.png`, and `images/final-features.png`.
+
 ## Week 3 / Milestone 3: Refactoring, Difficulty, and Best Times
 
 ### Added

@@ -3,6 +3,39 @@
 Evidence that the program compiles, runs, and behaves as expected.
 Screenshots are saved in the `/images` folder.
 
+## Milestone 4 (Week 4): Final Test Pass
+
+For the final version, I tested the whole program from start to finish, including menus, navigation, invalid input, every difficulty, and the bugs fixed in earlier weeks.
+
+| # | Test | Steps | Expected Result | Actual Result | Pass/Fail |
+|---|---|---|---|---|---|
+| 49 | Build | Rebuild the solution in Visual Studio | Rebuild succeeds with 0 errors and 0 warnings | Rebuild succeeded with 0 errors and 0 warnings | Pass |
+| 50 | Main menu input | At the main menu, type `abc`, then `9`, then press Enter on a blank line | Each one shows "Please enter a whole number from 1 to 4." and asks again | Showed the message each time and asked again | Pass |
+| 51 | How to Play | Choose 2 | Shows the new tips: the timer starts on your first reveal, and best times can be reset | Both new tips were shown | Pass |
+| 52 | Every difficulty | Start Easy, Medium, and Hard games, reveal one cell in each, then press `q` | Correct board size and mine count for each, and `q` returns to the main menu | 9 x 9 / 10, 16 x 16 / 40, and 16 x 30 / 99, and each returned to the menu | Pass |
+| 53 | Timer waits for first reveal | Start a game and wait about 10 seconds before revealing | Status line shows `Time: 0:00` until the first reveal | Stayed at 0:00 until the first reveal | Pass |
+| 54 | Timer runs | After the first reveal, wait a few seconds, then flag a cell | Status line time goes up | Time went up after the first reveal | Pass |
+| 55 | Win time counts from first reveal | (Easy set to 0 mines for testing) Wait 10 seconds, then reveal | "Your time: 0:00" because the wait before the first reveal doesn't count | Showed 0:00 | Pass |
+| 56 | Flag before first reveal | Start a game, flag a cell, then reveal a different cell | Flag is placed, the timer stays at 0:00 until the reveal, and the first reveal is safe | Worked as expected | Pass |
+| 57 | Row and column input | Enter `0` to cancel, then `17` on Easy, then `2x` | Cancel returns to the action prompt, and bad numbers show the range message | Worked as expected | Pass |
+| 58 | Reveal and flag edge cases | Reveal a flagged cell, flag a revealed cell, and reveal an already revealed cell | Each shows its own message and the game continues | Each message was correct and the game continued | Pass |
+| 59 | Loss screen | Flag a few cells, then reveal until you hit a mine | Mines show `*`, correct flags `F`, wrong flags `X`, and the legend explains them | Loss screen matched the legend | Pass |
+| 60 | Play again | After a win or loss, type `x`, then `y` | `x` shows "Please enter Y or N." and `y` starts a new board at the same difficulty | Worked as expected | Pass |
+| 61 | Best Times with no times | Delete `dev/best_times.txt`, then choose 3 | All three show "-- (not won yet)", then "Win a game to set your first best time." and it returns to the menu | Worked as expected | Pass |
+| 62 | Best Times prompt | With a saved time, choose 3, type `x`, then `b` | `x` shows "Please enter B or R." and `b` returns to the menu | Worked as expected | Pass |
+| 63 | Reset canceled | Choose 3, `r`, then `n` | "Best times were not changed." and the times are still there | Times were unchanged | Pass |
+| 64 | Reset confirmed | Choose 3, `r`, then `y`, then open Best Times again | "All best times have been reset." and every difficulty shows "--" | All times were cleared | Pass |
+| 65 | Reset is saved | Quit, run the program again, open Best Times | Times are still cleared after restarting | Still cleared after restarting | Pass |
+| 66 | Regression | Repeat tests 14–21 (Milestone 2) and 33–42 (Milestone 3) | Same results as before | Same results as before | Pass |
+| 67 | Quit | Choose 4 | "Thanks for playing!" and the program exits with code 0 | Exited with code 0 | Pass |
+
+**Note for test 55:** I temporarily changed Easy's mine count in `kDifficulties` (in `Game.cpp`) from 10 to 0 so the first reveal wins right away, then changed it back to 10, rebuilt, and deleted `dev/best_times.txt`.
+
+Screenshots:
+- `images/final-build.png` (successful build in Visual Studio)
+- `images/final-run.png` (a game in progress with the timer on the status line)
+- `images/final-features.png` (the Best Times screen with the reset option)
+
 ## Milestone 3 (Week 3)
 
 | # | Test | Steps | Expected Result | Actual Result | Pass/Fail |

@@ -2,7 +2,6 @@
 #include "../include/Board.h"
 #include "../include/Input.h"
 
-#include <chrono>
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -29,15 +28,12 @@ namespace
 }
 
 Game::Game()
-    : m_board(nullptr),
-      m_scores(kBestTimesFile)
+    : m_scores(kBestTimesFile)
 {
 }
 
-Game::~Game()
-{
-    DeleteBoard();
-}
+// The default destructor is enough: m_board deletes the Board by itself.
+Game::~Game() = default;
 
 void Game::Run()
 {
@@ -109,7 +105,9 @@ void Game::ShowHowToPlay() const
     std::cout << "  - Revealing an empty cell opens the empty area around it.\n";
     std::cout << "  - Flagged cells can't be revealed until you unflag them.\n";
     std::cout << "  - After a game ends, you can play again or return to the menu.\n";
+    std::cout << "  - The timer starts on your first reveal, not when the board appears.\n";
     std::cout << "  - Win fast to set a best time for each difficulty (see Best Times).\n";
+    std::cout << "  - You can reset your best times from the Best Times screen.\n";
     std::cout << "=================================\n";
 }
 
@@ -117,7 +115,8 @@ void Game::PrintStatus(const Board& board) const
 {
     std::cout << "\nMines: " << board.GetMineCount()
               << "   Flags placed: " << board.GetFlagCount()
-              << "   Mines remaining: " << board.GetMinesRemaining() << "\n";
+              << "   Mines remaining: " << board.GetMinesRemaining()
+              << "   Time: " << ScoreManager::FormatTime(m_stopwatch.GetElapsedSeconds()) << "\n";
 }
 
 void Game::HandleFlag(Board& board, int row, int col) const
@@ -186,11 +185,11 @@ void Game::PlayGames()
         playAgain = (result != RoundResult::QuitToMenu) && AskPlayAgain();
     }
 
-    // Back at the menu, so the board isn't needed anymore.
-    DeleteBoard();
+    // Back at the menu, so free the board now instead of waiting for the next game.
+    m_board.reset();
 }
 
-void Game::ShowBestTimes() const
+void Game::ShowBestTimes()
 {
     std::cout << "\n========== BEST TIMES ==========\n";
     for (int i = 0; i < kDifficultyCount; ++i)
@@ -208,6 +207,39 @@ void Game::ShowBestTimes() const
         }
     }
     std::cout << "================================\n";
+
+    if (!m_scores.HasAnyTimes())
+    {
+        std::cout << "Win a game to set your first best time.\n";
+        return;
+    }
+
+    char choice = Input::ReadChoice("Press (B) to go back or (R) to reset best times: ", "BR");
+    if (choice == 'R')
+    {
+        ResetBestTimes();
+    }
+}
+
+void Game::ResetBestTimes()
+{
+    // Deleting saved times can't be undone, so ask before doing it.
+    char confirm = Input::ReadChoice("Reset ALL best times? This can't be undone. (Y/N): ", "YN");
+    if (confirm == 'N')
+    {
+        std::cout << "Best times were not changed.\n";
+        return;
+    }
+
+    if (m_scores.ClearAll())
+    {
+        std::cout << "All best times have been reset.\n";
+    }
+    else
+    {
+        std::cout << "Best times were cleared for now, but " << kBestTimesFile
+                  << " couldn't be updated, so they may come back next time.\n";
+    }
 }
 
 void Game::ReportWinTime(const Difficulty& difficulty, int seconds)
@@ -243,20 +275,17 @@ Game::RoundResult Game::PlayRound(const Difficulty& difficulty)
               << m_board->GetCols() << " board with " << m_board->GetMineCount()
               << " mines. Good luck!\n";
 
-    // The timer starts when the board is shown and stops on a win.
-    std::chrono::steady_clock::time_point startTime = std::chrono::steady_clock::now();
+    // The stopwatch is cleared here and started by the first safe reveal,
+    // so time spent reading the empty board doesn't count against the player.
+    m_stopwatch.Reset();
 
     while (true)
     {
         switch (PlayTurn(*m_board))
         {
         case TurnResult::Won:
-        {
-            std::chrono::steady_clock::duration elapsed = std::chrono::steady_clock::now() - startTime;
-            int seconds = static_cast<int>(std::chrono::duration_cast<std::chrono::seconds>(elapsed).count());
-            ReportWinTime(difficulty, seconds);
+            ReportWinTime(difficulty, m_stopwatch.GetElapsedSeconds());
             return RoundResult::Won;
-        }
         case TurnResult::Lost:
             return RoundResult::Lost;
         case TurnResult::QuitToMenu:
@@ -317,9 +346,17 @@ bool Game::ReadMove(const Board& board, int& row, int& col) const
     return true;
 }
 
-Game::TurnResult Game::HandleReveal(Board& board, int row, int col) const
+Game::TurnResult Game::HandleReveal(Board& board, int row, int col)
 {
-    switch (board.RevealCell(row, col))
+    Board::RevealResult result = board.RevealCell(row, col);
+
+    // Start timing on the first reveal that actually opens a cell.
+    if (result == Board::RevealResult::Safe)
+    {
+        m_stopwatch.Start();
+    }
+
+    switch (result)
     {
     case Board::RevealResult::AlreadyRevealed:
         std::cout << "That cell is already revealed. Try another one.\n";
@@ -349,14 +386,7 @@ Game::TurnResult Game::HandleReveal(Board& board, int row, int col) const
 
 void Game::CreateBoard(const Difficulty& difficulty)
 {
-    // Free the last round's board first so its memory isn't leaked.
-    DeleteBoard();
-    m_board = new Board(difficulty.rows, difficulty.cols, difficulty.mineCount);
-}
-
-void Game::DeleteBoard()
-{
-    // Deleting nullptr does nothing, so this is safe to call at any time.
-    delete m_board;
-    m_board = nullptr;
+    // make_unique creates the new Board on the heap. Assigning it to m_board
+    // automatically deletes the previous round's Board, so nothing is leaked.
+    m_board = std::make_unique<Board>(difficulty.rows, difficulty.cols, difficulty.mineCount);
 }

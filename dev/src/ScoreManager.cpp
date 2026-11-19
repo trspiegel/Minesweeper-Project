@@ -41,6 +41,20 @@ bool ScoreManager::GetBestTime(const std::string& difficulty, int& seconds) cons
     return true;
 }
 
+bool ScoreManager::HasAnyTimes() const
+{
+    return !m_bestTimes.empty();
+}
+
+bool ScoreManager::ClearAll()
+{
+    m_bestTimes.clear();
+
+    // Saving an empty map leaves an empty file, so the old times don't come
+    // back the next time the game starts.
+    return Save();
+}
+
 std::string ScoreManager::FormatTime(int seconds)
 {
     int minutes = seconds / 60;
