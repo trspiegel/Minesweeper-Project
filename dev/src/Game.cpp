@@ -29,15 +29,12 @@ namespace
 }
 
 Game::Game()
-    : m_board(nullptr),
-      m_scores(kBestTimesFile)
+    : m_scores(kBestTimesFile)
 {
 }
 
-Game::~Game()
-{
-    DeleteBoard();
-}
+// The default destructor is enough: m_board deletes the Board by itself.
+Game::~Game() = default;
 
 void Game::Run()
 {
@@ -186,8 +183,8 @@ void Game::PlayGames()
         playAgain = (result != RoundResult::QuitToMenu) && AskPlayAgain();
     }
 
-    // Back at the menu, so the board isn't needed anymore.
-    DeleteBoard();
+    // Back at the menu, so free the board now instead of waiting for the next game.
+    m_board.reset();
 }
 
 void Game::ShowBestTimes() const
@@ -349,14 +346,7 @@ Game::TurnResult Game::HandleReveal(Board& board, int row, int col) const
 
 void Game::CreateBoard(const Difficulty& difficulty)
 {
-    // Free the last round's board first so its memory isn't leaked.
-    DeleteBoard();
-    m_board = new Board(difficulty.rows, difficulty.cols, difficulty.mineCount);
-}
-
-void Game::DeleteBoard()
-{
-    // Deleting nullptr does nothing, so this is safe to call at any time.
-    delete m_board;
-    m_board = nullptr;
+    // make_unique creates the new Board on the heap. Assigning it to m_board
+    // automatically deletes the previous round's Board, so nothing is leaked.
+    m_board = std::make_unique<Board>(difficulty.rows, difficulty.cols, difficulty.mineCount);
 }

@@ -2,6 +2,8 @@
 
 #include "ScoreManager.h"
 
+#include <memory>
+
 class Board;
 
 // Board size and mine count for one difficulty level.
@@ -15,17 +17,18 @@ struct Difficulty
 
 // Controls the flow of the program: the main menu and each round of play.
 // Game creates the Board on the heap at runtime, because its size depends on
-// the difficulty the player picks.
+// the difficulty the player picks. A std::unique_ptr owns the Board, so it is
+// deleted automatically and can never be leaked or deleted twice.
 class Game
 {
 public:
     Game();
 
-    // Frees the board if one is still in memory.
+    // Defined in Game.cpp, where Board is a complete type, so the unique_ptr
+    // knows how to delete the Board.
     ~Game();
 
-    // Game owns a raw Board pointer, so copying a Game would make two Games
-    // delete the same Board. Copying is turned off to prevent that.
+    // A unique_ptr can only have one owner, so a Game can't be copied.
     Game(const Game&) = delete;
     Game& operator=(const Game&) = delete;
 
@@ -89,14 +92,12 @@ private:
     // Asks "Play again? (Y/N)" after a win or loss.
     bool AskPlayAgain() const;
 
-    // Deletes the old board (if any) and creates a new one with new.
+    // Creates a new board for the chosen difficulty. The old board (if any)
+    // is deleted automatically when m_board takes ownership of the new one.
     void CreateBoard(const Difficulty& difficulty);
 
-    // Deletes the current board and sets the pointer back to nullptr.
-    void DeleteBoard();
-
-    // The board for the current round. nullptr when no round is being played.
-    Board* m_board;
+    // The board for the current round. Empty when no round is being played.
+    std::unique_ptr<Board> m_board;
 
     // Loads and saves the best time for each difficulty.
     ScoreManager m_scores;
