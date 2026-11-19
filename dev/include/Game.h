@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ScoreManager.h"
+#include "Stopwatch.h"
 
 #include <memory>
 
@@ -81,12 +82,13 @@ private:
     bool ReadMove(const Board& board, int& row, int& col) const;
 
     // Reveals a cell and reports whether the game was won, lost, or continues.
-    TurnResult HandleReveal(Board& board, int row, int col) const;
+    // The first safe reveal of a round starts the stopwatch.
+    TurnResult HandleReveal(Board& board, int row, int col);
 
     // Places or removes a flag and tells the player what happened.
     void HandleFlag(Board& board, int row, int col) const;
 
-    // Prints the mine, flag, and mines-remaining counts above the board.
+    // Prints the mine, flag, mines-remaining, and time counts above the board.
     void PrintStatus(const Board& board) const;
 
     // Asks "Play again? (Y/N)" after a win or loss.
@@ -101,4 +103,7 @@ private:
 
     // Loads and saves the best time for each difficulty.
     ScoreManager m_scores;
+
+    // Times the current round, starting on the first reveal.
+    Stopwatch m_stopwatch;
 };

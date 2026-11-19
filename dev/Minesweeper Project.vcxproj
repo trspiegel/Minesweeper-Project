@@ -145,6 +145,7 @@
     <ClCompile Include="src\Input.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ScoreManager.cpp" />
+    <ClCompile Include="src\Stopwatch.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Board.h" />
@@ -152,6 +153,7 @@
     <ClInclude Include="include\Game.h" />
     <ClInclude Include="include\Input.h" />
     <ClInclude Include="include\ScoreManager.h" />
+    <ClInclude Include="include\Stopwatch.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

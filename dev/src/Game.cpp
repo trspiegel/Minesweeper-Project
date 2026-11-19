@@ -2,7 +2,6 @@
 #include "../include/Board.h"
 #include "../include/Input.h"
 
-#include <chrono>
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -106,6 +105,7 @@ void Game::ShowHowToPlay() const
     std::cout << "  - Revealing an empty cell opens the empty area around it.\n";
     std::cout << "  - Flagged cells can't be revealed until you unflag them.\n";
     std::cout << "  - After a game ends, you can play again or return to the menu.\n";
+    std::cout << "  - The timer starts on your first reveal, not when the board appears.\n";
     std::cout << "  - Win fast to set a best time for each difficulty (see Best Times).\n";
     std::cout << "=================================\n";
 }
@@ -114,7 +114,8 @@ void Game::PrintStatus(const Board& board) const
 {
     std::cout << "\nMines: " << board.GetMineCount()
               << "   Flags placed: " << board.GetFlagCount()
-              << "   Mines remaining: " << board.GetMinesRemaining() << "\n";
+              << "   Mines remaining: " << board.GetMinesRemaining()
+              << "   Time: " << ScoreManager::FormatTime(m_stopwatch.GetElapsedSeconds()) << "\n";
 }
 
 void Game::HandleFlag(Board& board, int row, int col) const
@@ -240,20 +241,17 @@ Game::RoundResult Game::PlayRound(const Difficulty& difficulty)
               << m_board->GetCols() << " board with " << m_board->GetMineCount()
               << " mines. Good luck!\n";
 
-    // The timer starts when the board is shown and stops on a win.
-    std::chrono::steady_clock::time_point startTime = std::chrono::steady_clock::now();
+    // The stopwatch is cleared here and started by the first safe reveal,
+    // so time spent reading the empty board doesn't count against the player.
+    m_stopwatch.Reset();
 
     while (true)
     {
         switch (PlayTurn(*m_board))
         {
         case TurnResult::Won:
-        {
-            std::chrono::steady_clock::duration elapsed = std::chrono::steady_clock::now() - startTime;
-            int seconds = static_cast<int>(std::chrono::duration_cast<std::chrono::seconds>(elapsed).count());
-            ReportWinTime(difficulty, seconds);
+            ReportWinTime(difficulty, m_stopwatch.GetElapsedSeconds());
             return RoundResult::Won;
-        }
         case TurnResult::Lost:
             return RoundResult::Lost;
         case TurnResult::QuitToMenu:
@@ -314,9 +312,17 @@ bool Game::ReadMove(const Board& board, int& row, int& col) const
     return true;
 }
 
-Game::TurnResult Game::HandleReveal(Board& board, int row, int col) const
+Game::TurnResult Game::HandleReveal(Board& board, int row, int col)
 {
-    switch (board.RevealCell(row, col))
+    Board::RevealResult result = board.RevealCell(row, col);
+
+    // Start timing on the first reveal that actually opens a cell.
+    if (result == Board::RevealResult::Safe)
+    {
+        m_stopwatch.Start();
+    }
+
+    switch (result)
     {
     case Board::RevealResult::AlreadyRevealed:
         std::cout << "That cell is already revealed. Try another one.\n";
