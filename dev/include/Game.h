@@ -68,8 +68,12 @@ private:
     // Plays one game on a fresh board until the player wins, loses, or quits.
     RoundResult PlayRound(const Difficulty& difficulty);
 
-    // Prints the best time for each difficulty, or "--" if it hasn't been won.
-    void ShowBestTimes() const;
+    // Prints the best time for each difficulty, or "--" if it hasn't been won,
+    // then offers to reset the times if any are saved.
+    void ShowBestTimes();
+
+    // Asks the player to confirm, then deletes every saved best time.
+    void ResetBestTimes();
 
     // Tells the player their winning time and whether it's a new best time.
     void ReportWinTime(const Difficulty& difficulty, int seconds);

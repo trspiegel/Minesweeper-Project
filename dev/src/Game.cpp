@@ -107,6 +107,7 @@ void Game::ShowHowToPlay() const
     std::cout << "  - After a game ends, you can play again or return to the menu.\n";
     std::cout << "  - The timer starts on your first reveal, not when the board appears.\n";
     std::cout << "  - Win fast to set a best time for each difficulty (see Best Times).\n";
+    std::cout << "  - You can reset your best times from the Best Times screen.\n";
     std::cout << "=================================\n";
 }
 
@@ -188,7 +189,7 @@ void Game::PlayGames()
     m_board.reset();
 }
 
-void Game::ShowBestTimes() const
+void Game::ShowBestTimes()
 {
     std::cout << "\n========== BEST TIMES ==========\n";
     for (int i = 0; i < kDifficultyCount; ++i)
@@ -206,6 +207,39 @@ void Game::ShowBestTimes() const
         }
     }
     std::cout << "================================\n";
+
+    if (!m_scores.HasAnyTimes())
+    {
+        std::cout << "Win a game to set your first best time.\n";
+        return;
+    }
+
+    char choice = Input::ReadChoice("Press (B) to go back or (R) to reset best times: ", "BR");
+    if (choice == 'R')
+    {
+        ResetBestTimes();
+    }
+}
+
+void Game::ResetBestTimes()
+{
+    // Deleting saved times can't be undone, so ask before doing it.
+    char confirm = Input::ReadChoice("Reset ALL best times? This can't be undone. (Y/N): ", "YN");
+    if (confirm == 'N')
+    {
+        std::cout << "Best times were not changed.\n";
+        return;
+    }
+
+    if (m_scores.ClearAll())
+    {
+        std::cout << "All best times have been reset.\n";
+    }
+    else
+    {
+        std::cout << "Best times were cleared for now, but " << kBestTimesFile
+                  << " couldn't be updated, so they may come back next time.\n";
+    }
 }
 
 void Game::ReportWinTime(const Difficulty& difficulty, int seconds)
